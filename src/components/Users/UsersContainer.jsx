@@ -1,10 +1,12 @@
 import React, {Component} from "react";
 import { connect } from "react-redux";
-import { follow, unfollow, setUsers, setCurrentPage, setTotalUsersCount, toggleIsFetching, toggleFollowingInProgress, getUsersThunkCreator } from "../../redux-store/users-reducer";
+import { follow, unfollow, setUsers, setCurrentPage, setTotalUsersCount, 
+    toggleIsFetching, toggleFollowingInProgress, getUsersThunkCreator } from "../../redux-store/users-reducer";
 import Users from "./Users";
 import Preloader from "../common/Preloader/Preloader";
-import { withAuthRedirect } from "../../hoc/withAuthRedirect";
 import { compose } from "redux";
+import { getPageSize, getTotalUsersCount, getCurrentPage, 
+    getIsFetching, getFollowingInProgress, getUsers } from "../../redux-store/users-selectors";
 
 class UsersContainer extends Component {
     componentDidMount() {
@@ -39,12 +41,13 @@ class UsersContainer extends Component {
 
 let mapStateToProps = (state) => {
     return {
-        users: state.usersPage.users,
-        pageSize: state.usersPage.pageSize,
-        totalUsersCount: state.usersPage.totalUsersCount,
-        currentPage: state.usersPage.currentPage,
-        isFetching: state.usersPage.isFetching,
-        followingInProgress: state.usersPage.followingInProgress
+        // users: getUsers(state),
+        users: getUsers(state),
+        pageSize: getPageSize(state),
+        totalUsersCount: getTotalUsersCount(state),
+        currentPage: getCurrentPage(state),
+        isFetching: getIsFetching(state),
+        followingInProgress: getFollowingInProgress(state)
     }
 }
 
@@ -84,8 +87,9 @@ let mapStateToProps = (state) => {
 //       getUsers: getUsersThunkCreator 
 //     })(withRedirect);
 
+
 export default compose(
-    withAuthRedirect, // удалить withAuthRedirect чтобы убрать защиту isAuth.
+    //withAuthRedirect, // удалить withAuthRedirect чтобы убрать защиту isAuth.
     connect( mapStateToProps, { 
         follow, unfollow, setUsers, setCurrentPage, setTotalUsersCount, toggleIsFetching, toggleFollowingInProgress, 
         // thunk

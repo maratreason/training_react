@@ -1,9 +1,9 @@
 import React from "react";
 import classes from "./ProfileInfo.module.css";
 import Preloader from "../../common/Preloader/Preloader";
+import ProfileStatusWithHooks from "./ProfileStatusWithHooks";
 
-const ProfileInfo = ({ profile }) => {
-    console.log('profile', profile)
+const ProfileInfo = ({ profile, status, updateStatus }) => {
     let url = '';
     if (!profile) {
         return <Preloader />
@@ -22,7 +22,7 @@ const ProfileInfo = ({ profile }) => {
                 <img src={url} alt=""/>
             </div>
             <h3>{profile.fullName}</h3>
-            <p>{profile.aboutMe}</p>   
+            <ProfileStatusWithHooks status={status} updateStatus={updateStatus} />  
         </div>
     )
 }

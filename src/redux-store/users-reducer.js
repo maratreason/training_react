@@ -12,7 +12,7 @@ const initialState = {
     users: [],
     pageSize: 5,
     totalUsersCount: 0,
-    currentPage: 1,
+    page: 1,
     isFetching: false,
     followingInProgress: []
 }
@@ -53,7 +53,7 @@ const usersReducer = (state = initialState, action) => {
                 users: action.payload
             }
         case SET_CURRENT_PAGE:
-            return { ...state, currentPage: action.payload }
+            return { ...state, page: action.payload }
         case SET_TOTAL_USERS_COUNT:
             return { ...state, totalUsersCount: action.payload }
         case TOGGLE_IS_FETCHING:
@@ -83,10 +83,12 @@ export const toggleFollowingInProgress = (isFetching, userId) => ({type: TOGGLE_
 export const getUsersThunkCreator = (currentPage, pageSize) => {
     return (dispatch) => {
         dispatch(toggleIsFetching(true));
+        dispatch(setCurrentPage(currentPage));
+
         UsersAPI.getUsers(currentPage, pageSize).then(response => {
+            dispatch(toggleIsFetching(false));
             dispatch(setTotalUsersCount(response.totalCount));
             dispatch(setUsers(response.items));
-            dispatch(toggleIsFetching(false));
         });
     }
 }
