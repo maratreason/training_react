@@ -3,6 +3,7 @@ import { ProfileAPI } from "../api/api";
 const ADD_POST = 'ADD-POST';
 const SET_USER_PROFILE = 'SET-USER-PROFILE';
 const SET_STATUS = 'SET_STATUS';
+const DELETE_POST = 'DELETE_POST';
 
 const initialState = {
     posts: [
@@ -39,36 +40,38 @@ const profileReducer = (state = initialState, action) => {
                 ...state,
                 status: action.payload
             }
+        case DELETE_POST: 
+            return {
+                ...state,
+                posts: state.posts.filter(p => p.id !== action.payload)
+            }
         default:
             return state;
     }
 }
 
 export const addPostActionCreator = (post) => ({type: ADD_POST, payload: post});
+export const deletePost = (id) => ({type: DELETE_POST, payload: id});
+
 export const setUserProfile = (profile) => ({type: SET_USER_PROFILE, payload: profile});
 export const setStatus = (status) => ({type: SET_STATUS, payload: status});
 
 // thunk
-export const setUserProfileThunkCreator = (userId) => {
-    return (dispatch) => {
-        ProfileAPI.getProfile(userId).then(data => {
-            dispatch(setUserProfile(data));
-        });
-    }
+export const setUserProfileThunkCreator = (userId) => async (dispatch) => {
+    const response = await ProfileAPI.getProfile(userId);
+    dispatch(setUserProfile(response.data));
 }
 // thunk
-export const getStatus = (userId) => {
-    return (dispatch) => {
-        ProfileAPI.getStatus(userId).then(response => {
-            dispatch(setStatus(response));
-        });
-    }
+export const getStatus = (userId) => async (dispatch) => {
+    let response = await ProfileAPI.getStatus(userId)
+    dispatch(setStatus(response.data));
 }
 
-export const updateStatusUser = (status) => (dispatch) => {
-    ProfileAPI.updateStatus(status).then(data => {
-        dispatch(setStatus(data));
-    });
+export const updateStatusUser = (status) => async (dispatch) => {
+    let response = await ProfileAPI.updateStatus(status);
+    if (response.data.resultCode === 0) {
+        dispatch(setStatus(status));
+    }
 }
 
 export default profileReducer;

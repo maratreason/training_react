@@ -1,4 +1,5 @@
 import { UsersAPI } from "../api/api";
+import { updateObjectInArray } from "../utils/object-helpers";
 
 const FOLLOW = 'FOLLOW';
 const UNFOLLOW = 'UNFOLLOW';
@@ -22,29 +23,13 @@ const usersReducer = (state = initialState, action) => {
         case FOLLOW:
             return {
                 ...state,
-                users: state.users.map(el => {
-                    if (el.id === action.payload) {
-                        return {
-                            ...el,
-                            followed: true
-                        }
-                    }
-                    return el;
-                })
+                users: updateObjectInArray(state.users, action.payload, "id", { followed: true })
             };
 
         case UNFOLLOW:
             return {
                 ...state,
-                users: state.users.map(el => {
-                    if (el.id === action.payload) {
-                        return {
-                            ...el,
-                            followed: false
-                        }
-                    }
-                    return el;
-                })
+                users: updateObjectInArray(state.users, action.payload, "id", { followed: false })
             };
 
         case SET_USERS:
@@ -81,39 +66,38 @@ export const toggleFollowingInProgress = (isFetching, userId) => ({type: TOGGLE_
 // Делаем thunk
 // Функция возвращает функцию.
 export const getUsersThunkCreator = (currentPage, pageSize) => {
-    return (dispatch) => {
+    return async (dispatch) => {
         dispatch(toggleIsFetching(true));
         dispatch(setCurrentPage(currentPage));
 
-        UsersAPI.getUsers(currentPage, pageSize).then(response => {
-            dispatch(toggleIsFetching(false));
-            dispatch(setTotalUsersCount(response.totalCount));
-            dispatch(setUsers(response.items));
-        });
+        const response = await UsersAPI.getUsers(currentPage, pageSize);
+        dispatch(toggleIsFetching(false));
+        dispatch(setTotalUsersCount(response.data.totalCount));
+        dispatch(setUsers(response.data.items));
     }
 }
 
+// Функция для рефакторинга foolow и unfollow
+const followUnfollowFlow = async (dispatch, userId, apiMethod, actionCreator) => {
+    dispatch(toggleFollowingInProgress(true, userId));
+    let response = await apiMethod(userId);
+
+    if (response.data.resultCode === 0) {
+        dispatch(actionCreator(userId));
+    }
+    dispatch(toggleFollowingInProgress(false, userId));
+}
+
+
 export const unfollow = (userId) => {
-    return (dispatch) => {
-        dispatch(toggleFollowingInProgress(true, userId));
-        UsersAPI.unfollow(userId).then(data => {
-            if (data.resultCode === 0) {
-                dispatch(unfollowSuccess(userId));
-            }
-            dispatch(toggleFollowingInProgress(false, userId));
-        });
+    return async (dispatch) => {
+        followUnfollowFlow(dispatch, userId, UsersAPI.unfollow.bind(UsersAPI), unfollowSuccess);
     }
 }
 
 export const follow = (userId) => {
-    return (dispatch) => {
-        dispatch(toggleFollowingInProgress(true, userId));
-        UsersAPI.follow(userId).then(data => {
-            if (data.resultCode === 0) {
-                dispatch(followSuccess(userId));
-            }
-            dispatch(toggleFollowingInProgress(false, userId));
-        });
+    return async (dispatch) => {
+        followUnfollowFlow(dispatch, userId, UsersAPI.follow.bind(UsersAPI), followSuccess);
     }
 }
 

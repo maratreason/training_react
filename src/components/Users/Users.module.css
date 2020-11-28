@@ -7,23 +7,3 @@
     padding: 20px;
     margin-bottom: 10px;
 }
-
-.selectedPage {
-    font-weight: bold;
-    background: #ccc;
-}
-
-.pagination {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.pagination span {
-    padding: 10px;
-    cursor: pointer;
-}
-
-.pagination span:hover {
-    background: #ccc;
-}

@@ -11,27 +11,30 @@ import { getPageSize, getTotalUsersCount, getCurrentPage,
 class UsersContainer extends Component {
     componentDidMount() {
         // это callback thunk-а
-        this.props.getUsers(this.props.currentPage, this.props.pageSize);
+        const { getUsers, currentPage, pageSize } = this.props;
+        getUsers(currentPage, pageSize);
     }
 
-    onPageChanged = (pageNumber) => {
-        this.props.setCurrentPage(pageNumber);
-        this.props.getUsers(pageNumber, this.props.pageSize);
+    onPageChanged = (pageNumber, pageSize) => {
+        const { getUsers, setCurrentPage } = this.props;
+        setCurrentPage(pageNumber);
+        getUsers(pageNumber, pageSize);
     }
 
     render() {
+        const { isFetching, totalUsersCount, pageSize, currentPage, users, follow, unfollow, followingInProgress } = this.props;
         return (
             <>
-                { this.props.isFetching ? <Preloader /> : null }
+                { isFetching ? <Preloader /> : null }
                 <Users
-                    totalUsersCount={this.props.totalUsersCount}
-                    pageSize={this.props.pageSize}
-                    currentPage={this.props.currentPage}
+                    totalUsersCount={totalUsersCount}
+                    pageSize={pageSize}
+                    currentPage={currentPage}
                     onPageChanged={this.onPageChanged}
-                    users={this.props.users}
-                    follow={this.props.follow}
-                    unfollow={this.props.unfollow}
-                    followingInProgress={this.props.followingInProgress}
+                    users={users}
+                    follow={follow}
+                    unfollow={unfollow}
+                    followingInProgress={followingInProgress}
                 />
             </>
         );
@@ -41,7 +44,6 @@ class UsersContainer extends Component {
 
 let mapStateToProps = (state) => {
     return {
-        // users: getUsers(state),
         users: getUsers(state),
         pageSize: getPageSize(state),
         totalUsersCount: getTotalUsersCount(state),
@@ -92,8 +94,6 @@ export default compose(
     //withAuthRedirect, // удалить withAuthRedirect чтобы убрать защиту isAuth.
     connect( mapStateToProps, { 
         follow, unfollow, setUsers, setCurrentPage, setTotalUsersCount, toggleIsFetching, toggleFollowingInProgress, 
-        // thunk
         getUsers: getUsersThunkCreator 
-        }
-    )(UsersContainer)
+    })(UsersContainer)
 );
