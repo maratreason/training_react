@@ -1,9 +1,12 @@
+import { stopSubmit } from "redux-form";
 import { ProfileAPI } from "../api/api";
 
 const ADD_POST = 'ADD-POST';
 const SET_USER_PROFILE = 'SET-USER-PROFILE';
 const SET_STATUS = 'SET_STATUS';
 const DELETE_POST = 'DELETE_POST';
+const SAVE_PHOTO_SUCCESS = 'SAVE_PHOTO_SUCCESS';
+const SAVE_PROFILE_SUCCESS = 'SAVE_PROFILE_SUCCESS';
 
 const initialState = {
     posts: [
@@ -45,6 +48,16 @@ const profileReducer = (state = initialState, action) => {
                 ...state,
                 posts: state.posts.filter(p => p.id !== action.payload)
             }
+        case SAVE_PHOTO_SUCCESS: 
+            return {
+                ...state,
+                profile: action.payload
+            }
+        case SAVE_PROFILE_SUCCESS: 
+            return {
+                ...state,
+                profile: {...state.profile, photos: action.payload}
+            }
         default:
             return state;
     }
@@ -55,6 +68,10 @@ export const deletePost = (id) => ({type: DELETE_POST, payload: id});
 
 export const setUserProfile = (profile) => ({type: SET_USER_PROFILE, payload: profile});
 export const setStatus = (status) => ({type: SET_STATUS, payload: status});
+
+export const savePhotoSuccess = (photos) => ({type: SAVE_PHOTO_SUCCESS, payload: photos});
+export const saveProfileSuccess = (profile) => ({type: SAVE_PROFILE_SUCCESS, payload: profile});
+
 
 // thunk
 export const setUserProfileThunkCreator = (userId) => async (dispatch) => {
@@ -71,6 +88,25 @@ export const updateStatusUser = (status) => async (dispatch) => {
     let response = await ProfileAPI.updateStatus(status);
     if (response.data.resultCode === 0) {
         dispatch(setStatus(status));
+    }
+}
+
+export const savePhoto = (file) => async (dispatch) => {
+    let response = await ProfileAPI.savePhoto(file);
+    if (response.data.resultCode === 0) {
+        dispatch(savePhotoSuccess(response.data.data.photos));
+    }
+}
+
+export const saveProfile = (profile) => async (dispatch, getState) => {
+    const userId = getState().auth.userId;
+    let response = await ProfileAPI.saveProfile(profile);
+    if (response.data.resultCode === 0) {
+        dispatch(setUserProfileThunkCreator(userId));
+    } else {
+        // let fieldName = response.data.messages[0].split("->")[1].split(")")[0];
+        // dispatch(stopSubmit("edit-profile", {"contacts": { [fieldName] : " некорректно заполнено" } }));
+        dispatch(stopSubmit("edit-profile", { _error : response.data.messages[0] } ));
     }
 }
 

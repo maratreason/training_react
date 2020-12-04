@@ -18,10 +18,11 @@ function Users({ totalUsersCount, pageSize, currentPage, onPageChanged, unfollow
                 )
             }
             <Paginator
-                totalUsersCount={totalUsersCount}
+                totalItemsCount={totalUsersCount}
                 pageSize={pageSize}
                 currentPage={currentPage}
                 onPageChanged={onPageChanged}
+                portionSize={10}
             />
         </div>
     );

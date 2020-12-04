@@ -4,6 +4,7 @@ const INITIALIZED_SUCCESS = "INITIALIZED_SUCCESS";
 
 const initialState = {
     initialized: false,
+    // globalError: null // для теста ошибки
 }
 
 const appReducer = (state = initialState, action) => {

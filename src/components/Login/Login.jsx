@@ -7,7 +7,7 @@ import { createField, Input } from "../common/FormControls/FormControls";
 import { login } from "../../redux-store/auth-reducer";
 import classes from "./Login.module.css";
 
-const LoginForm = ({ handleSubmit, error }) => {
+const LoginForm = ({ handleSubmit, error, captchaUrl }) => {
     return (
         <form onSubmit={handleSubmit}>
             <div>{ createField("Email", "email", Input, [required]) }</div>
@@ -20,7 +20,13 @@ const LoginForm = ({ handleSubmit, error }) => {
             <div>
                 <Field name={"rememberMe"} component={Input} type="checkbox" />Remember me
             </div>
-            <div className={classes.formSummaryError}>{error}</div>
+
+            { captchaUrl && <img className={classes.captcha} src={captchaUrl} alt="prop" /> }
+            { captchaUrl && createField("Symbols from image", "captchaUrl", Input, [required]) }
+
+            {
+                error && <div className={classes.formSummaryError}>{error}</div>
+            }
             <div><button>Login</button></div>
         </form>
     )
@@ -30,9 +36,9 @@ const LoginReduxForm = reduxForm({
     form: "login"
 })(LoginForm);
 
-const Login = ({ login, isAuth }) => {
+const Login = ({ login, isAuth, captchaUrl }) => {
     const onSubmit = (formData) => {
-        login(formData.email, formData.password, formData.rememberMe);
+        login(formData.email, formData.password, formData.rememberMe, formData.captchaUrl);
     }
 
     if (isAuth) return <Redirect to={"/profile"} />
@@ -40,13 +46,17 @@ const Login = ({ login, isAuth }) => {
     return (
         <div>
             <h1>Login</h1>
-            <LoginReduxForm onSubmit={onSubmit} />
+            <LoginReduxForm onSubmit={onSubmit} captchaUrl={captchaUrl} />
         </div>
     )
 }
 
-const mapStateToProps = (state) => ({
-    isAuth: state.auth.isAuth
-});
+const mapStateToProps = (state) => {
+    return {
+        isAuth: state.auth.isAuth,
+        captchaUrl: state.auth.captchaUrl,
+    }
+    
+};
 
 export default connect(mapStateToProps, {login})(Login);
